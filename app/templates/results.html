@@ -1,0 +1,1046 @@
+{% extends 'base.html'%}
+
+
+{%block css%}
+    <link href="/static/styles/results.css" rel="stylesheet">
+{%endblock%}
+
+
+{%block page%}
+    <div id="section_results">
+        <h2>Carbon Footprint Results For {{display_username}}</h2><hr>
+        <script src="https://d3js.org/d3.v4.js"></script>
+        <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+        <div id="results">
+            <h3>Total Emissions</h3>
+            After processing your activites, we have calculated that your total approximate yearly emissions are:<br><br>
+            <h5><b>{{user_emissions_list[0][0]}} kg of CO2e</b></h5>
+            <hr>
+            <h3>Category Breakdown</h3>
+            Here is a breakdown of your emissions by category (units in kg of CO2e):<br><br>
+            <table class="table table-borderless">
+                <thead>
+                    <tr>
+                        <th>Weekly Travel</th>
+                        <th>Long Distance Travel</th>
+                        <th>Clothing</th>
+                        <th>Food</th>
+                        <th>Misc</th>                        
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{user_emissions_list[1][0]}}</td>
+                        <td>{{user_emissions_list[2][0]}}</td>
+                        <td>{{user_emissions_list[3][0]}}</td>
+                        <td>{{user_emissions_list[4][0]}}</td>
+                        <td>{{user_emissions_list[5][0]}}</td>
+                    </tr>
+                </tbody>
+            </table>
+{% if first_user == True%}
+<br>
+You are the first user for our site! Thus, there are no further details we can give you at this time. 
+Please check again later!
+{%else%}
+            <button onclick="update(data1)">Your Data</button>
+            <button onclick="update(data2)">Average User Data</button>
+            <div id="my_dataviz"></div>
+            <script src="https://d3js.org/d3-legend.v2.min.js"></script>
+            <script>
+
+                // set the dimensions and margins of the graph
+                var width = 450
+                    height = 450
+                    margin = 40
+                    
+                // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
+                var radius = Math.min(width, height) / 2 - margin
+                
+                // append the svg object to the div called 'my_dataviz'
+                var svg = d3.select("#my_dataviz")
+                    .append("svg")
+                        .attr("width", width * 2)
+                        .attr("height", height)
+                    .append("g")
+                        .attr("transform", "translate(" + width / 0.85 + "," + height / 2 + ")");
+                
+                // create 2 data_set
+                var data1 = {a: {{user_emissions_list[1][0]}}, b: {{user_emissions_list[2][0]}}, c: {{user_emissions_list[3][0]}}, d: {{user_emissions_list[4][0]}}, e: {{user_emissions_list[5][0]}}}
+                var data2 = {a: {{avg_emissions_list[1]}}, b: {{avg_emissions_list[2]}}, c:{{avg_emissions_list[3]}}, d:{{avg_emissions_list[4]}}, e:{{avg_emissions_list[5]}}}
+                
+                // set the color scale
+                var color = d3.scaleOrdinal()
+                    .domain(["a", "b", "c", "d", "e"])
+                    .range(['rgba(255, 0, 0, 0.5)', 'rgba(255, 127, 0, 0.5)', 'rgba(255, 255, 0, 0.5)', 'rgba(0, 255, 0, 0.5)', 'rgba(0, 0, 235, 0.5)']);
+                
+                // A function that create / update the plot for a given variable:
+                function update(data) {
+                
+                    var labels = ["Weekly Travel", "Long Distance Travel", "Clothing", "Food", "Misc"];
+                    
+                    // Compute the position of each group on the pie:
+                    var pie = d3.pie()
+                        .value(function(d) {return d.value; })
+                        .sort(function(a, b) { console.log(a) ; return d3.ascending(a.key, b.key);} ) // This make sure that group order remains the same in the pie chart
+                    var data_ready = pie(d3.entries(data))
+                
+                    // map to data
+                    var u = svg.selectAll("path")
+                        .data(data_ready)
+
+                    var legend = svg.selectAll(".legend")
+                        .data(labels)
+                        .enter().append("g")
+                        .attr("class", "legend")
+                        .attr("transform", function(d, i) { return "translate(-" + (width/2 - 120) + "," + (i * 20 - height/4) + ")"; });
+
+                    // add legend colored rectangles
+                    legend.append("rect")
+                        .attr("x", width - 18)
+                        .attr("width", 18)
+                        .attr("height", 18)
+                        .style("fill", function(d, i) { return color(i); });
+
+                    // add legend text
+                    legend.append("text")
+                        .attr("x", width - 24)
+                        .attr("y", 9)
+                        .attr("dy", ".35em")
+                        .style("text-anchor", "end")
+                        .text(function(d) { return d; });
+                    // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
+                    u
+                        .enter()
+                        .append('path')
+                        .merge(u)
+                        .transition()
+                        .duration(1000)
+                        .attr('d', d3.arc()
+                        .innerRadius(0)
+                        .outerRadius(radius)
+                        )
+                        .attr('fill', function(d){ return(color(d.data.key)) })
+                        .attr("stroke", "white")
+                        .style("stroke-width", "2px")
+                        .style("opacity", 1)
+                
+                    // remove the group that is not present anymore
+                    u
+                        .exit()
+                        .remove()
+                
+                    }
+                
+                    // Initialize the plot with the first dataset
+                    update(data1)
+        </script>
+        </div><br>
+        <h3>Individual Breakdown of Current Submission</h3><hr>
+        <div><canvas id="breakdown_barchart"></canvas></div>  
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const new_chart = document.getElementById('breakdown_barchart');
+        
+            new Chart(new_chart, {
+                type: 'bar',
+                data: {
+                labels: ["Weekly Travel", "Long Distance Travel", "Clothing", "Food", "Misc"],
+                datasets: [{
+                    data: [{{event_list["Weekly Travel"][0][0]}}, 
+                    0,0,0,0],
+                    label: ' Personal Car (Gas)',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [{{event_list["Weekly Travel"][0][1]}}, 
+                    0,0,0,0],
+                    label: ' Personal Car (Electric)',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.55)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [{{event_list["Weekly Travel"][0][2]}}, 
+                    0,0,0,0],
+                    label: ' Taxi or Rideshare (Uber/Lyft/etc.)',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.6)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [{{event_list["Weekly Travel"][0][3]}}, 
+                    0,0,0,0],
+                    label: ' Bus',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.65)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [{{event_list["Weekly Travel"][0][4]}}, 
+                    0,0,0,0],
+                    label: ' Transit Rail',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.7)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Weekly Travel'][0][5]}}, 
+                    0,0,0],
+                    label: ' Biking',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.75)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Weekly Travel'][0][6]}}, 
+                    0,0,0],
+                    label: ' Walking',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.8)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][0]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 1',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][1]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 2',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.55)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][2]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 3',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.6)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][3]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 4',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.65)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][4]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 5',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.7)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][5]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 6',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.75)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][6]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 7',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.8)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,
+                    {{event_list['Long Distance Travel'][0][7]}}, 
+                    0,0,0],
+                    label: ' Long Distance Travel, Flight 8',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.85)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,
+                    {{event_list['Clothing'][0][0]}}, 
+                    0,0],
+                    label: ' Leather',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.8)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,
+                    {{event_list['Clothing'][0][1]}}, 
+                    0,0],
+                    label: ' Footwear',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.85)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,
+                    {{event_list['Clothing'][0][2]}}, 
+                    0,0],
+                    label: ' Fur',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.9)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,
+                    {{event_list['Clothing'][0][3]}}, 
+                    0,0],
+                    label: ' Hats',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.95)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,
+                    {{event_list['Clothing'][0][4]}}, 
+                    0,0],
+                    label: ' Other',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 1)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][0]}}, 
+                    0],
+                    label: ' Dairy Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][1]}}, 
+                    0],
+                    label: ' Beef Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.55)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][2]}}, 
+                    0],
+                    label: ' Pork Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.6)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][3]}}, 
+                    0],
+                    label: ' Poultry Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.65)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][4]}}, 
+                    0],
+                    label: ' Seafood Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.7)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][5]}}, 
+                    0],
+                    label: ' Fruit / Vegetable Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.75)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][6]}}, 
+                    0],
+                    label: ' Frozen Food Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.8)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,
+                    {{event_list['Food'][0][7]}}, 
+                    0],
+                    label: ' Pet Food Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.85)',
+                        'rgba(0, 0, 235, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,0, 
+                    {{event_list['Misc'][0][0]}}],
+                    label: ' Computer Games',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.55)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    data: [0,0,0,0, 
+                    {{event_list['Misc'][0][1]}}],
+                    label: ' Tobacco Products',
+
+                    borderWidth: 3,
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.5)',
+                        'rgba(255, 127, 0, 0.5)',
+                        'rgba(255, 255, 0, 0.5)',
+                        'rgba(0, 255, 0, 0.5)',
+                        'rgba(0, 0, 235, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 0'
+                },
+                {
+                    label: "Average Emissions",
+                    data: [
+                        {{avg_emissions_list[1]}},
+                        {{avg_emissions_list[2]}},
+                        {{avg_emissions_list[3]}},
+                        {{avg_emissions_list[4]}},
+                        {{avg_emissions_list[5]}}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 0, 0, 0.3)',
+                        'rgba(255, 127, 0, 0.3)',
+                        'rgba(255, 255, 0, 0.45)',
+                        'rgba(0, 255, 0, 0.45)',
+                        'rgba(0, 0, 235, 0.3)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)',
+                        'rgb(255, 255, 255)'
+                    ],
+                    stack: 'Stack 1',
+                    borderWidth: 3
+                }],
+                
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'kg of CO2e',
+                                font: {
+                                    size: 20
+                                }
+                            }
+                        },
+                        x:{
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Emission Category',
+                                font: {
+                                    size: 20
+                                }
+                            }            
+                        }
+                    }
+                }
+            });
+
+        </script>
+        <hr><br>
+        <h3>What has been your emissions performance over time?</h3>
+        <div><canvas id="overtime_linechart"></canvas></div>  
+        <script>
+            const new_linechart = document.getElementById('overtime_linechart');
+        
+            new Chart(new_linechart, {
+                type: 'line',
+                data: {
+                labels: {{overtime_labels|tojson}},
+                datasets: [{
+                    label: "Emissions Over Different Submissions",
+                    fill: false,
+                    data: {{overtime_emission_set|tojson}},
+                    borderColor: [
+                        'rgb(255, 0, 100)'
+                    ],
+                }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'kg of CO2e',
+                                font: {
+                                    size: 20
+                                }
+                            }
+                        },
+                        x:{
+                            title: {
+                                display: true,
+                                text: 'Submission Number',
+                                font: {
+                                    size: 20
+                                }
+                            }            
+                        }
+                    }
+                }
+            });
+        </script><br>
+    <div id="recommendations">
+        <h3>Recommendations</h3>
+        Based on your breakdown by category, we offer these recommendations for reducing your emissions:<br>
+        <ul>
+            <li>
+                The category that contains the <b>largest percentage</b> of your emissions is <b>{{max_category[1]}}</b>
+                with an emission amount of <b>{{max_category[0]}} kg</b> of CO2e, accounting for
+                <b>{{max_category_percentage}}%</b> of your total emissions.<br>
+            </li>
+            {% if first_user == False %}
+                {% for category in user_vs_avg_percentage_list %}
+                    <li>
+                    {% if category[0] > 0 %}
+                        For the {{category[1]}} category, you have a <b>larger</b> carbon footprint compared to
+                        average user. In particular, you emit <b>{{category[0]}}% more</b> CO2e than other 
+                        users for our site. Try to bring your emissions under for this category!
+                    {% elif category[0] < 0 %}
+                        For the {{category[1]}} category, you have a <b>smaller</b> carbon footprint compared to
+                        average user. In particular, you emit <b>{{category[0]}}% less</b> CO2e than other 
+                        users for our site. Keep up the good work!
+                    {% else %}
+                        You emit exactly the same amount of CO2e as the average user for the {{category[1]}} category.
+                        You're on track to reduce your emissions, but keep going at it!
+                    {%endif%}
+                    </li>
+                {%endfor%}
+            {%else%}
+                <li>You are the first user for our site! Therefore, we unfortunately cannot provide you with information
+                about your emissions compared to the site averages. Please check again later!
+                </li>
+            {%endif%}
+        </ul>
+    </div><br>
+    <hr>
+    <h3> Let's take a look at how you can reduce your emissions: </h3>
+    {% if (user_vs_avg_percentage_list[1][1] == 'weekly travel' and user_vs_avg_percentage_list[1][0]|float > 10) or
+          (user_vs_avg_percentage_list[2][1] == 'long distance travel' and user_vs_avg_percentage_list[2][0]|float > 10) or 
+          (user_vs_avg_percentage_list[3][1] == 'clothing' and user_vs_avg_percentage_list[3][0]|float > 10) or 
+          (user_vs_avg_percentage_list[4][1] == 'food' and user_vs_avg_percentage_list[4][0]|float > 10) or 
+          (user_vs_avg_percentage_list[5][1] == 'misc' and user_vs_avg_percentage_list[5][0]|float > 10) %}
+    <em>Below are recommended solutions for the categories in which you contribute 20% or more emissions compared to the average user:</em><br>
+    {% endif %}
+        {% if first_user == False %}
+            {% if user_vs_avg_percentage_list[1][1] == 'weekly travel' and user_vs_avg_percentage_list[1][0]|float > 10 %}
+            <br>
+                <h4>Weekly Travel</h4>
+                <ul>
+                    <li><strong>Use public transportation:</strong> Using public transportation, such as buses or trains, can greatly reduce the amount of weekly travel. This can also be a cost-effective option.</li>
+                    <li><strong>Carpooling:</strong> Carpooling with colleagues or friends can help reduce the number of cars on the road and decrease the amount of fuel consumed.</li>
+                    <li><strong>Walking or cycling:</strong> If the destination is close enough, walking or cycling can be a healthy and eco-friendly alternative to driving.</li>
+                    <li><strong>Telecommuting:</strong> If possible, working from home can eliminate the need for daily travel to the office.</li>
+                    <li><strong>Combining trips:</strong> Planning and combining errands or appointments can help reduce the number of trips made in a week.</li>
+                    <li><strong>Avoid unnecessary trips:</strong> Before making a trip, consider if it is truly necessary. For example, can the task be done online or over the phone instead of in-person?</li>
+                </ul>
+            {% endif %}
+
+            {% if user_vs_avg_percentage_list[2][1] == 'long distance travel' and user_vs_avg_percentage_list[2][0]|float > 10 %}
+            <br>
+            <h4>Long Distance Travel</h4>
+            <ul>
+                <li><strong>Choose fuel-efficient transportation:</strong> When traveling long distances, consider using fuel-efficient modes of transportation, such as hybrid or electric vehicles, or public transportation if it is available.</li>
+                <li><strong>Reduce air travel:</strong> Air travel is one of the most carbon-intensive forms of transportation. If possible, consider alternative modes of transportation, such as trains or buses, for long-distance travel.</li>
+                <li><strong>Offset carbon emissions:</strong> If air travel is necessary, consider purchasing carbon offsets to help mitigate the impact of the emissions.</li>
+                <li><strong>Plan ahead:</strong> Planning trips in advance can help reduce the number of trips and make the most of the travel.</li>
+                <li><strong>Travel light:</strong> Packing light can help reduce the weight of the vehicle and improve fuel efficiency.</li>
+            </ul>
+        {% endif %}
+        {% if user_vs_avg_percentage_list[3][1] == 'clothing' and user_vs_avg_percentage_list[3][0]|float > 10 %}
+            <br>
+                <h4>Clothing</h4>
+                <ul>
+                    <li><strong>Shop secondhand:</strong> Buying secondhand clothing can help reduce the environmental impact of clothing production and save money.</li>
+                    <li><strong>Invest in quality pieces:</strong> Investing in high-quality clothing can reduce the need to replace items frequently, reducing waste and cost over time.</li>
+                    <li><strong>Maintain and repair clothing:</strong> Regularly maintaining and repairing clothing can extend its lifespan and reduce the need to buy new items.</li>
+                    <li><strong>Avoid fast fashion:</strong> Fast fashion items are often produced quickly and cheaply, resulting in low-quality clothing that quickly goes out of style. Avoiding fast fashion can help reduce waste and support more sustainable fashion practices.</li>
+                </ul>
+            {% endif %}
+
+        {% if user_vs_avg_percentage_list[4][1] == 'food' and user_vs_avg_percentage_list[4][0]|float > 10 %}
+            <br>
+                <h4>Food</h4>
+                <ul>
+                    <li><strong>Reduce meat consumption:</strong> Meat production has a significant environmental impact. Reducing meat consumption or switching to plant-based alternatives can help reduce this impact.</li>
+                    <li><strong>Buy locally produced food:</strong> Buying locally produced food can help reduce the environmental impact of transportation and support local farmers and businesses.</li>
+                    <li><strong>Reduce food waste:</strong> Reducing food waste can help save money and reduce the environmental impact of food production and transportation.</li>
+                    <li><strong>Grow your own food:</strong> Growing your own food can be a fun and rewarding way to reduce the environmental impact of food production and transportation.</li>
+                </ul>
+            {% endif %}
+
+        {% if user_vs_avg_percentage_list[5][1] == 'misc' and user_vs_avg_percentage_list[5][0]|float > 10 %}
+            <br>
+                <h4>Miscellaneous</h4>
+                <ul>
+                    <li><strong>Reduce paper usage:</strong> Reducing paper usage can help save trees and reduce waste. Consider using electronic documents and reducing unnecessary printing.</li>
+                    <li><strong>Reuse and recycle:</strong> Reusing items and recycling materials can help reduce waste and conserve resources.</li>
+                    <li><strong>Conserve water and energy:</strong> Conserving water and energy can help reduce environmental impact and save money on utility bills.</li>
+                    <li><strong>Avoid single-use items:</strong> Single-use items, such as plastic bags and utensils, contribute to waste and pollution. Avoiding these items and using reusable alternatives can help reduce environmental impact.</li>
+                </ul>
+            {% endif %}
+            {%else%}
+            <li>You are the first user for our site! Therefore, we unfortunately cannot provide you with information
+                about your emissions compared to the site averages. Please check again later!
+                </li>
+            {%endif%}
+        </div>
+    {%endif%}
+{%endblock%}

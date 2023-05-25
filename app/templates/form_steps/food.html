@@ -1,0 +1,35 @@
+{% extends 'base.html'%}
+{%block css%}<link href="{{ url_for('static', filename='styles/form.css') }}" rel="stylesheet">{%endblock%}
+
+
+{%block page%}
+    <div id="form_content" class="container">
+        <h2>Food Questions</h2><br>
+        <form action="handler-food" method="POST">
+            <fieldset>
+            <legend>In the past <i><b>week</b></i>, how much money (USD) have you spent on the following:</legend><br>
+            <div>
+                <label>Dairy:</label><br>
+                <input type="number" min="0" name="dairy_products" required><br><br>
+                <label>Beef Products:</label><br>
+                <input type="number" min="0" name="beef_products" required><br><br>
+                <label>Pork Products:</label><br>
+                <input type="number" min="0" name="pork_products" required><br><br>
+                <label>Poultry Products:</label><br>
+                <input type="number" min="0" name="poultry_products" required><br><br>
+                <label>Seafood Products:</label><br>
+                <input type="number" min="0" name="seafood_products" required><br><br>
+                <label>Fruits and Vegetables:</label><br>
+                <input type="number" min="0" name="fruits_vegetables" required><br><br>
+                <label>Frozen Food:</label><br>
+                <input type="number" min="0" name="frozen_food" required><br><br>
+                <label>Pet Food:</label><br>
+                <input type="number" min="0" name="pet_food" required><br><br>
+            </div>
+            <div>
+                <input type="submit" value="Next">
+            </div>
+            </fieldset>
+        </form>
+    </div>
+{%endblock%}

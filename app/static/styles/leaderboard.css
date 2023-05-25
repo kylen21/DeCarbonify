@@ -1,0 +1,21 @@
+body {
+    background: linear-gradient(135deg, rgb(221, 246, 221), rgb(191, 241, 191));
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+body,html {
+    min-height: 100%;
+    margin: 0;
+}
+
+.table {
+    margin-top: 35px;
+    border-radius: 15px;
+    background-color: #DCF2DE;
+}
+
+#leaderboard_header {
+    text-align: center;
+    padding-top: 20px;
+}

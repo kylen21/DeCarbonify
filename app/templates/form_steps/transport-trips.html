@@ -1,0 +1,41 @@
+{% extends 'base.html'%}
+{%block css%}<link href="{{ url_for('static', filename='styles/form.css') }}" rel="stylesheet">{%endblock%}
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <center><h2 class="mb-2">{{ message }}</h2></center>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+{%block page%}
+    <div id="form_content" class="container">
+        <h2>Long-Distance Transportation Questions</h2><br>
+        <form action="/handler-trips" method="POST">
+            <fieldset>
+            <legend>Did take any flights this past <i><b>year</b></i>?</legend>
+            <div>
+                <br>
+                <div id="trip_form">
+                    <b><label>Flight 1:</label></b>
+                    {% include 'form_steps/tripinfo.html' %}
+                </div>
+                <input type="button" onclick="addTripClick()" id="addTripButton" value = "Add Trip"><br><br>
+            </div>
+            <div>
+                <input type="submit" value="Next">
+            </div>
+            </fieldset>
+        </form>
+    </div>
+{%endblock%}
+
+
+
+{%block scripts%}
+    <!-- Javascript Section -->
+    <script src="static/js/add_trip.js"></script>
+{%endblock%}

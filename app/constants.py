@@ -1,0 +1,42 @@
+#API Key
+MY_API_KEY="1A6XAZ6QGA4TK6MEE0N205PTXV9F"
+BACKUP_API_KEY="7F2V7GCC22M309H91ENJ7X9E9AK3"
+
+#Travel activity IDs
+# ID_FLIGHT = "23bb2e4d-f227-487c-8ad7-69b70df476f4"
+ID_GASCAR = "9e3e1d32-9158-44fa-967b-01dd4eded999"
+ID_EVCAR = "4003fe94-22d4-4e47-a765-12a7c946e3b6"
+ID_TAXI = "f83eeae7-43a5-4460-9988-c21327ca09af"
+ID_BUS = "945a07f9-d26e-4046-9827-55102eea0528"
+ID_RAIL = "2af8f38b-0f55-4b7f-9037-50bd301ae6b9" #PassengerOverDistance unit
+ID_BIKING = None
+ID_WALKING = None
+
+#Clothing and apparel IDs
+ID_LEATHER = "afac5f9f-30b1-4336-a547-f3b15e1155f1"
+ID_FOOTWEAR = "ee1c6aa2-8c51-443f-8558-222e923bfc12"
+ID_FUR = "068e70ef-9ec1-488f-be7e-e3a124d7bf17"
+ID_HATS = "23bc7813-b8a9-4482-bbe8-8ecbc8429bb3"
+ID_OTHER = "5cac93bf-dc4e-4bca-b5a6-e66ee95e3bdd"
+
+#Food IDs
+ID_DAIRY = "87b10e3f-bcf1-40a9-828c-1718aeb39533"
+ID_BEEF = "a0f6b53e-4bc1-4b31-a418-f21ee4ececad"
+ID_PORK = "b176c07f-2826-4f27-8b39-522e60c2ff57"
+ID_POULTRY = "c0f9134a-9e63-4ef3-966e-4d252e7c4bfc"
+ID_SEAFOOD = "a10aeb0d-a54d-4c33-b75b-fee9b163bc8a"
+ID_FRUITSVEGETABLES = "d024d5ae-9ac6-4be0-939f-1fd8ef71f936"
+ID_FROZENFOOD = "7845fac7-de14-444e-a1a7-33f51a8e43df"
+ID_PETFOOD = "c24fc147-0382-4586-b4b5-7968056e0128"
+
+#Misc IDs
+ID_SOFTWARE = "e590de48-217d-4c61-a465-45b878dd049e"
+ID_TOBACCO = "f77a078f-7e7c-4811-93a8-ac510d446bf8"
+
+ID_DICT = {
+    "gascar_distance": ID_GASCAR,
+    "evcar_distance": ID_EVCAR,
+    "taxi_distance": ID_TAXI,
+    "bus_distance": ID_BUS,
+    "rail_distance": ID_RAIL,
+}

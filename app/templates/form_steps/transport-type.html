@@ -1,0 +1,49 @@
+{% extends 'base.html'%}
+{%block css%}<link href="{{ url_for('static', filename='styles/form.css') }}" rel="stylesheet">{%endblock%}
+
+{%block page%}
+<div id="form_content" class="container">
+    <h2>Transportation Type Questions</h2>
+    <form action="/transport-dist" method="POST">
+      <fieldset>
+        <legend>What forms of transportation do you use on a <i><b>weekly</b></i> basis?</legend>
+        <br>
+        <div class="form-group">
+          <label><b>Please select all that apply:</b></label>
+          <div class="form-check">
+            <input type="checkbox" name="gascar" id="gascar" class="form-check-input">
+            <label class="form-check-label" for="gascar">Personal Car (Gas)</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="evcar" id="evcar" class="form-check-input">
+            <label class="form-check-label" for="evcar">Personal Car (Electric)</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="taxi" id="taxi" class="form-check-input">
+            <label class="form-check-label" for="taxi">Taxi or Rideshare (Uber/Lyft/etc.)</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="bus" id="bus" class="form-check-input">
+            <label class="form-check-label" for="bus">Bus</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="rail" id="rail" class="form-check-input">
+            <label class="form-check-label" for="rail">Transit Rail</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="bike" id="bike" class="form-check-input">
+            <label class="form-check-label" for="bike">Biking</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="walking" id="walking" class="form-check-input">
+            <label class="form-check-label" for="walking">Walking</label>
+          </div>
+        </div>     
+        <br> 
+        <div>
+          <input type="submit" value="Next" class="btn btn-primary">
+        </div>
+      </fieldset>
+    </form>
+  </div>
+{%endblock%}

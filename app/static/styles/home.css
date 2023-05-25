@@ -1,0 +1,19 @@
+body {
+    margin: 0;
+    background-image: url(../images/background.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#start-btn {
+    border-style: solid;
+    background-color: lightgreen;
+    border-color: black;
+    font-weight: bold;
+    border-width: 3px;
+}
+
+.startquestion {
+    text-align: center;
+    padding: 50px;
+}

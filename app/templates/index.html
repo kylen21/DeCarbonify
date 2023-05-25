@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block page %}
+    <div class="sitepagebody">
+        <div class="container">
+            <div class="startquestion">
+                <img src="/static/images/logo_full.png"><br><br>
+                <h1>Begin Your Carbon Footprint Calculation!</h1>
+                <a role="button" href="/form" id="start-btn" class="btn btn-lg btn-default">Start Questionnaire</a>
+            </div>
+        </div>
+    </div>    
+{% endblock %}
+
+{% block scripts %}
+    <!-- Setting Active Navbar Option: Questionnaire -->
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#questionnaire').toggleClass('nav-link').toggleClass('nav-link active');
+        });
+    </script>
+{% endblock %}

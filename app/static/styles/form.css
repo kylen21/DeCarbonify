@@ -1,0 +1,16 @@
+#form_content {
+    padding-top: 5%;
+    padding-left: 20%;
+    padding-bottom: 5%;
+}
+
+body {
+    background: linear-gradient(135deg, rgb(221, 246, 221), rgb(191, 241, 191));
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+body,html {
+    min-height: 100%;
+    margin: 0;
+}

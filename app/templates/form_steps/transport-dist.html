@@ -1,0 +1,24 @@
+{% extends 'base.html'%}
+{%block css%}<link href="{{ url_for('static', filename='styles/form.css') }}" rel="stylesheet">{%endblock%}
+
+{%block page%}
+    <div id="form_content" class="container">
+        <h2>Transportation Distance Questions</h2><br>
+        <form action="{{ url_for('handler_dist') }}" method="POST">
+            {% for transport in selected_transport_types %}
+                <fieldset>
+                <legend>How many kilometers did you commute this <i><b>week</b></i> by {{selected_transport_types[transport]}}?</legend>
+                <br>
+                <div>
+                    {% set name = transport + '_distance' | string() %}
+                    <input type="number" min="0" name={{name}} required>
+                </div>
+                <br> 
+                </fieldset>
+            {% endfor %}
+            <div>
+                <input type="submit" value="Next">
+            </div>
+        </form>
+    </div>
+{%endblock%}

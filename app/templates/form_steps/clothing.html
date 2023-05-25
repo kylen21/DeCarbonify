@@ -1,0 +1,29 @@
+{% extends 'base.html'%}
+{%block css%}<link href="{{ url_for('static', filename='styles/form.css') }}" rel="stylesheet">{%endblock%}
+
+{%block page%}
+    <div id="form_content" class="container">
+        <h2>Clothing and Apparel Questions</h2><br>
+        <form action="/handler-clothing" method="POST">
+            <fieldset>
+            <legend>In the past <i><b>year</b></i>, how much money (USD) have you spent on the following:</legend>
+            <div>
+                <br>
+                <label>Leather Goods:</label><br>
+                <input type="number" min="0" name="leather" required><br><br>
+                <label>Footwear:</label><br>
+                <input type="number" min="0" name="footwear" required><br><br>
+                <label>Fur Goods:</label><br>
+                <input type="number" min="0" name="fur" required><br><br>
+                <label>Hats and Accessories:</label><br>
+                <input type="number" min="0" name="hats" required><br><br>
+                <label>Other General Clothing:</label><br>
+                <input type="number" min="0" name="other" required><br><br>
+            </div>
+            <div>
+                <input type="submit" value="Next">
+            </div>
+            </fieldset>
+        </form>
+    </div>
+{%endblock%}

@@ -1,0 +1,39 @@
+{%extends 'base.html'%}
+
+{%block css%}
+    <link href="{{ url_for('static', filename='styles/leaderboard.css') }}" rel="stylesheet">
+{%endblock%}
+
+{%block page%}
+    <div class="container">
+        <table id='leaderboard_table' class="table table-striped">
+            <h2 id="leaderboard_header">Leaderboard of Lowest Emission Users</h2>
+            <thead>
+                <tr>
+                    <th scope="col">Rank</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Yearly Emissions (kg of CO2e)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set counter = namespace(row_num=1) %}
+                {%for user in all_users%}
+                <tr>
+                    <th scope="row">{{counter.row_num}}</th>
+                    <td>{{user.username}}</td>
+                    <td>{{user.get_total_emissions()}}</td>
+                    {% set counter.row_num = counter.row_num + 1 %}
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
+{%endblock%}
+
+{%block scripts%}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#leaderboard').toggleClass('nav-link').toggleClass('nav-link active');
+        });
+    </script>
+{%endblock%}

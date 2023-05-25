@@ -1,0 +1,49 @@
+{%extends 'base.html'%}
+
+{%block css%}<link href="{{ url_for('static', filename='styles/transport-type.css') }}" rel="stylesheet">{%endblock%}
+
+{%block page%}
+<div id="page">
+    <h2 id="prompt" class="text-center">{%block prompt%}What forms of transportation do you use on a <i><b>weekly</b></i> basis?{%endblock%}</h2>
+    <div class="container d-flex justify-content-center align-items-center">
+        {%block form_content%}
+        <form action="/form-handler" method="POST">
+            <label class="form-label" style="padding-top: 25px;">Please select all that apply:</label><hr>
+            <div class="form-outline mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="gascar">
+                    <label class="form-check-label">Personal Car (Gas)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="evcar">
+                    <label class="form-check-label">Personal Car (Electric)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="taxi">
+                    <label class="form-check-label">Taxi or Rideshare (Uber/Lyft/etc.)</label>
+                </div>       
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="bus">
+                    <label class="form-check-label">Bus</label>
+                </div>    
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="rail">
+                    <label class="form-check-label">Transit Rail</label>
+                </div>    
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="bike">
+                    <label class="form-check-label">Biking</label>
+                </div>    
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="walking">
+                    <label class="form-check-label">Walking</label>
+                </div>    
+            </div>
+            <div class="mb-3">
+                <input type="submit" class="btn btn-primary" value="Next">
+            </div>
+        </form>
+        {%endblock%}
+    </div>
+</div>
+{%endblock%}

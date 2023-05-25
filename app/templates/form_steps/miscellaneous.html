@@ -1,0 +1,24 @@
+{% extends 'base.html'%}
+{%block css%}<link href="{{ url_for('static', filename='styles/form.css') }}" rel="stylesheet">{%endblock%}
+
+{%block page%}
+    <div id="form_content" class="container">
+        <h2>Miscellaneous Consumption</h2>
+        <form action="/handler-misc" method="POST">
+            <fieldset>
+            <legend>In the past <i><b>year</b></i>, how much money (USD) have you spent on the following:</legend>
+            <div>
+                <br>
+                <label>Computer Software or Games:</label><br>
+                <input type="number" min="0" name="computer_games" required><br><br>
+                <label>Tobacco Products:</label><br>
+                <input type="number" min="0" name="tobacco_products" required><br><br>
+            </div>
+            <br> 
+            <div>
+                <input type="submit" value="Next">
+            </div>
+            </fieldset>
+        </form>
+    </div>
+{%endblock%}

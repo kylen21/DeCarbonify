@@ -1,0 +1,19 @@
+#section_results {
+    padding: 20px;
+}
+
+body {
+    /* background: linear-gradient(135deg, rgb(221, 246, 221), rgb(191, 241, 191)); */
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.table {
+    border-radius: 15px;
+    background-color: #DCF2DE;
+}
+
+body,html {
+    min-height: 100%;
+    margin: 0;
+}
